@@ -1,6 +1,8 @@
 
 import { generateMnemonic } from 'bip39'
 import { useState } from 'react'
+import SolanaWallet from './SolanaWallet';
+import EthereumWallet from './EthereumWallet';
 
 const WalletGenerator = () => {
     const [mnemonics, setMnemonics] = useState('')
@@ -110,6 +112,14 @@ const WalletGenerator = () => {
                     </button>
                 </div>
             )}
+            <div className='p-3 w-full'>
+                <div className=''>
+                    <SolanaWallet mnemonic={mnemonics} />
+                </div>
+                <div>
+                    <EthereumWallet mnemonic={mnemonics} />
+                </div>
+            </div>
         </div>
     )
 }
