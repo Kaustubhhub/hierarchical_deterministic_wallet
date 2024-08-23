@@ -1,7 +1,7 @@
-import { Keypair, PublicKey, Connection, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Keypair, PublicKey, Connection, clusterApiUrl, LAMPORTS_PER_SOL, TransactionSignature, Finality } from '@solana/web3.js';
 import { mnemonicToSeed } from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import nacl from "tweetnacl";
 
 interface Wallet {
@@ -28,6 +28,7 @@ const SolanaWallet = ({ mnemonic }: { mnemonic: string }) => {
     };
 
     const showBalance = async (index: number, publicKey: PublicKey) => {
+        console.log('index', index);
         const balanceInSol = await fetchBalance(publicKey);
         setBalances((prevBalances) => ({
             ...prevBalances,
