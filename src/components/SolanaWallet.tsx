@@ -1,4 +1,4 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey, Connection, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { mnemonicToSeed } from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import React, { useEffect, useState } from 'react';
@@ -10,18 +10,52 @@ interface Wallet {
     mnemonic: string;
 }
 
+const connection = new Connection(clusterApiUrl('devnet'));
+
 const SolanaWallet = ({ mnemonic }: { mnemonic: string }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [wallets, setWallets] = useState<Wallet[]>([]);
     const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const [balances, setBalances] = useState<{ [key: string]: number | null }>({});
 
     const toggleAccordion = (index: number) => {
         setOpenIndex(openIndex === index ? null : index);
     };
 
+    const fetchBalance = async (publicKey: PublicKey) => {
+        const balance = await connection.getBalance(publicKey);
+        return balance / LAMPORTS_PER_SOL;
+    };
+
+    const showBalance = async (index: number, publicKey: PublicKey) => {
+        const balanceInSol = await fetchBalance(publicKey);
+        setBalances((prevBalances) => ({
+            ...prevBalances,
+            [publicKey.toBase58()]: balanceInSol,
+        }));
+    };
+
+    const airdropSol = async (publicKey: PublicKey) => {
+        console.log('airdropSol');
+        try {
+            const airdropSignature: TransactionSignature = await connection.requestAirdrop(publicKey, 10 * LAMPORTS_PER_SOL);
+            const latestBlockhash = await connection.getLatestBlockhash();
+            await connection.confirmTransaction({
+                signature: airdropSignature,
+                blockhash: latestBlockhash.blockhash,
+                lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+            }, 'finalized' as Finality);
+            alert("Airdrop successful!");
+        } catch (error) {
+            console.error("Airdrop failed:", error);
+            alert("Airdrop failed. Please try again.");
+        }
+    };
+
     useEffect(() => {
         setWallets([]);
         setCurrentIndex(0);
+        setBalances({});
     }, [mnemonic]);
 
     const addWallet = async () => {
@@ -93,6 +127,9 @@ const SolanaWallet = ({ mnemonic }: { mnemonic: string }) => {
                                 <div>
                                     <strong>Private Key:</strong> {wallet.privateKey}
                                 </div>
+                                <div>
+                                    <strong>Balance:</strong> {balances[wallet.publicKey.toBase58()] !== undefined ? balances[wallet.publicKey.toBase58()] : 'N/A'}
+                                </div>
                                 <div className='flex justify-end items-end p-2'>
                                     <button
                                         onClick={() => {
@@ -115,13 +152,18 @@ const SolanaWallet = ({ mnemonic }: { mnemonic: string }) => {
                                         Copy Private Key
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            
-                                        }}
+                                        onClick={() => showBalance(index, wallet.publicKey)}
                                         type="button"
                                         className="ml-2 text-white bg-red-700 hover:bg-red-800 focus:outline-none font-medium rounded-full text-sm px-5 py-2.5 text-center mb-2 dark:bg-red-600 dark:hover:bg-red-700"
                                     >
-                                        Show balance
+                                        Show Balance
+                                    </button>
+                                    <button
+                                        onClick={() => airdropSol(wallet.publicKey)}
+                                        type="button"
+                                        className="ml-2 text-white bg-green-700 hover:bg-green-800 focus:outline-none font-medium rounded-full text-sm px-5 py-2.5 text-center mb-2 dark:bg-green-600 dark:hover:bg-green-700"
+                                    >
+                                        Airdrop 10 SOL
                                     </button>
                                 </div>
                             </div>
