@@ -1,5 +1,5 @@
 import type React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction, type Keypair } from "@solana/web3.js";
 import { Button, buttonVariants } from "../ui/button";
 import { CopyIcon } from "lucide-react";
@@ -74,7 +74,6 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
             return
         }
         try {
-
             const connection = new Connection(import.meta.env.VITE_SOLANA_DEV_URL);
             const transaction = new Transaction();
             const lamportsToSend = Number(amount) * 100000000;
@@ -89,7 +88,7 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                 transaction,
                 [walletDetail]
             )
-            console.log(signature);
+            toast.error("Transaction successfull!");
         } catch (error: any) {
             toast.error("error: ", error);
         }
@@ -105,6 +104,9 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                 <DialogHeader>
                     <DialogTitle>Wallet Details</DialogTitle>
                 </DialogHeader>
+                <DialogDescription>
+                    Explore wallet functions
+                </DialogDescription>
                 <Button onClick={requestAirdrop} className={`cursor-pointer ${buttonVariants({ variant: "secondary" })}`}>request airdrop</Button>
 
                 <div className="border rounded p-2 flex justify-between items-center transition-all duration-300 hover:border-amber-50">
@@ -113,13 +115,15 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                     </p>
                     <Button onClick={handleCopy} className={`cursor-pointer size-10 ${buttonVariants({ variant: "secondary" })}`}><CopyIcon /></Button>
                 </div>
+                
                 <div className="flex justify-between items-center">
                     <p className="border w-8/12 p-2 rounded">{balance}</p>
                     <Button onClick={showBalance} className={`cursor-pointer ${buttonVariants({ variant: "secondary" })}`}>Show balance</Button>
                 </div>
 
                 <Separator />
-                <h3>Transact Solana  </h3>
+
+                <h3>Transact Solana</h3>
 
                 <Input onChange={(e) => {
                     setRecieverPubKey(e.target.value);

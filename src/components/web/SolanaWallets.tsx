@@ -25,14 +25,14 @@ const SolanaWallets = ({ mneumonics }: props) => {
     }
 
     return (
-        <div className="border rounded my-4 py-4">
-            <div className="flex px-2 justify-between items-center">
+        <div className="border rounded my-4 py-4 px-4">
+            <div className="flex justify-between items-center">
                 <h3 className="font-bold text-xl ">Sol Wallets</h3>
                 <button className={buttonVariants({ variant: "secondary" })} onClick={addNewSolanaWallet} disabled={mneumonics == ""}>Add wallet</button>
             </div>
             {publicKeys.map((obj, idx) => (
-                <DialogDemo walletDetail={obj}>
-                    <div key={idx} className="cursor-pointer rounded flex justify-between border m-2 h-10 items-center p-2 hover:border-amber-50 hover:scale-101 transition-all duration-300">
+                <DialogDemo key={idx} walletDetail={obj}>
+                    <div className="cursor-pointer rounded flex justify-between border my-2 h-10 items-center p-2 hover:border-amber-50 hover:scale-101 transition-all duration-300">
                         <p> Wallet {idx + 1}</p>
                         <p className="text-muted-foreground text-xs">{obj.publicKey.toString()}</p>
                     </div>
