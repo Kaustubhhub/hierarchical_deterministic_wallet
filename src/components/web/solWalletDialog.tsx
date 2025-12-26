@@ -54,7 +54,7 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
 
             toast.info("Requesting airdrop...");
 
-            const signature = await rpc.requestAirdrop(receiver, airdropAmt).send();
+            await rpc.requestAirdrop(receiver, airdropAmt).send();
 
             toast.success("Airdrop successful!");
 
@@ -83,7 +83,7 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                 lamports: lamportsToSend
             })
             transaction.add(sendSolTransaction)
-            const signature = await sendAndConfirmTransaction(
+            await sendAndConfirmTransaction(
                 connection,
                 transaction,
                 [walletDetail]
@@ -115,7 +115,7 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                     </p>
                     <Button onClick={handleCopy} className={`cursor-pointer size-10 ${buttonVariants({ variant: "secondary" })}`}><CopyIcon /></Button>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                     <p className="border w-8/12 p-2 rounded">{balance}</p>
                     <Button onClick={showBalance} className={`cursor-pointer ${buttonVariants({ variant: "secondary" })}`}>Show balance</Button>
