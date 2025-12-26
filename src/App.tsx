@@ -7,6 +7,8 @@ import { ThemeProvider } from './components/web/theme-provider'
 import Navbar from './components/web/navbar'
 import { buttonVariants } from './components/ui/button'
 import { CopyIcon } from 'lucide-react'
+import { Toaster } from './components/ui/sonner'
+import { toast } from 'sonner'
 
 function App() {
   const [mneumonics, setMneumonics] = useState("")
@@ -21,6 +23,7 @@ function App() {
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(mneumonics);
+        toast.success("copied to clipboard")
   }
 
   return (
@@ -45,7 +48,7 @@ function App() {
         <SolanaWallets mneumonics={mneumonics} />
         <EthWallets mneumonics={mneumonics} />
       </div>}
-
+      <Toaster closeButton />
     </ThemeProvider>
   )
 }

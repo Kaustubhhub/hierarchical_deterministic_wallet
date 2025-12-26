@@ -5,12 +5,18 @@ import { Button, buttonVariants } from "../ui/button";
 import { CopyIcon } from "lucide-react";
 import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
+import { toast } from "sonner";
 
 
 function DialogDemo({ children, walletDetail }: { children: React.ReactNode, walletDetail: Keypair }) {
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(walletDetail.publicKey.toString())
+        toast.success("copied to clipboard")
+    }
+
+    const showBalance = async() => {
+
     }
 
     return (
@@ -28,11 +34,11 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                     <p className="text-muted-foreground">
                         {walletDetail.publicKey.toString()}
                     </p>
-                    <Button onClick={handleCopy} className={`size-10 ${buttonVariants({ variant: "secondary" })}`}><CopyIcon /></Button>
+                    <Button onClick={handleCopy} className={`cursor-pointer size-10 ${buttonVariants({ variant: "secondary" })}`}><CopyIcon /></Button>
                 </div>
                 <div className="flex justify-between items-center">
                     <p className="border w-8/12 p-2 rounded">****</p>
-                    <Button className={`cursor-pointer ${buttonVariants({ variant: "secondary" })}`}>Show balance</Button>
+                    <Button onClick={showBalance} className={`cursor-pointer ${buttonVariants({ variant: "secondary" })}`}>Show balance</Button>
                 </div>
 
                 <Separator />
