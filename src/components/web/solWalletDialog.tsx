@@ -1,6 +1,6 @@
 import type React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { LAMPORTS_PER_SOL, type Keypair } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction, type Keypair } from "@solana/web3.js";
 import { Button, buttonVariants } from "../ui/button";
 import { CopyIcon } from "lucide-react";
 import { Input } from "../ui/input";
@@ -12,6 +12,9 @@ import { address, createSolanaRpc, lamports } from "@solana/kit";
 function DialogDemo({ children, walletDetail }: { children: React.ReactNode, walletDetail: Keypair }) {
     const SOL_URL = import.meta.env.VITE_SOLANA_DEV_URL;
     const [balance, setBalance] = useState<string>("****")
+    const [recieverPubKey, setRecieverPubKey] = useState<string>("")
+    const [amount, setAmount] = useState<string>()
+
     const handleCopy = async () => {
         await navigator.clipboard.writeText(walletDetail.publicKey.toString())
         toast.success("copied to clipboard")
@@ -22,47 +25,75 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
             alert("URL is not present");
             return;
         }
-
         const body = {
             jsonrpc: "2.0",
             id: 1,
             method: "getBalance",
             params: [walletDetail.publicKey.toString()]
         };
-
         const result = await fetch(SOL_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         });
-
         const data = await result.json();
-
         if (!data) {
             toast.error("Failed to fetch balance")
         }
-
         setBalance(data.result.value);
-        toast.error("Balanced fetched.")
+        toast.success("Balanced fetched.")
     };
 
     const requestAirdrop = async () => {
+        try {
+            const rpc_url = "https://api.devnet.solana.com";
+            const rpc = createSolanaRpc(rpc_url);
 
-        const rpc_url = "https://api.devnet.solana.com";
-        const rpc = createSolanaRpc(rpc_url);
+            const receiver = address(walletDetail.publicKey.toString());
+            const airdropAmt = lamports(BigInt(1 * LAMPORTS_PER_SOL));
 
-        let receiver = address(walletDetail.publicKey.toString());
+            toast.info("Requesting airdrop...");
 
-        let airdropAmt = lamports(BigInt(1 * LAMPORTS_PER_SOL));
+            const signature = await rpc.requestAirdrop(receiver, airdropAmt).send();
 
-        let signature = await rpc.requestAirdrop(receiver, airdropAmt).send();
+            toast.success("Airdrop successful!");
 
-        toast.success("Airdrop successfull!")
-
-        console.log(signature);
+        } catch (err: any) {
+            console.error("Airdrop failed:", err);
+            toast.error(err?.message ?? "Airdrop failed. Please try again.");
+        }
     };
 
+    const sendSolana = async () => {
+        if (!amount) {
+            toast.error("please enter valid amount");
+            return
+        }
+        if (recieverPubKey == "") {
+            toast.error("please enter valid public key.");
+            return
+        }
+        try {
 
+            const connection = new Connection(import.meta.env.VITE_SOLANA_DEV_URL);
+            const transaction = new Transaction();
+            const lamportsToSend = Number(amount) * 100000000;
+            const sendSolTransaction = SystemProgram.transfer({
+                fromPubkey: walletDetail.publicKey,
+                toPubkey: new PublicKey(recieverPubKey),
+                lamports: lamportsToSend
+            })
+            transaction.add(sendSolTransaction)
+            const signature = await sendAndConfirmTransaction(
+                connection,
+                transaction,
+                [walletDetail]
+            )
+            console.log(signature);
+        } catch (error: any) {
+            toast.error("error: ", error);
+        }
+    }
 
     return (
         <Dialog>
@@ -90,10 +121,14 @@ function DialogDemo({ children, walletDetail }: { children: React.ReactNode, wal
                 <Separator />
                 <h3>Transact Solana  </h3>
 
-                <Input className="w-8/12" placeholder="Enter recievers public key" />
+                <Input onChange={(e) => {
+                    setRecieverPubKey(e.target.value);
+                }} className="w-8/12" placeholder="Enter recievers public key" />
                 <div className="flex justify-between items-center">
-                    <Input className="w-8/12 " />
-                    <Button className={`cursor-pointer w-3/12  ${buttonVariants({ variant: "secondary" })}`}>send solana</Button>
+                    <Input onChange={(e) => {
+                        setAmount(e.target.value);
+                    }} className="w-8/12 " />
+                    <Button onClick={sendSolana} className={`cursor-pointer w-3/12  ${buttonVariants({ variant: "secondary" })}`}>send solana</Button>
                 </div>
             </DialogContent>
         </Dialog>
